@@ -8,6 +8,9 @@ namespace Program
     {
         static void Main(string[] args)
         {
+
+            //When using the driver executable, pass 0(or Nothing at all) to read, or 1 to write.
+            //For both options, you can also include path to search or write to as the next argument. 
             if (args.Length > 0)
             {
                 string dir;
