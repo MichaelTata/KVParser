@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Collections.Concurrent;
 
+
 namespace KVParser
 {
     public class KeyValParser
@@ -33,6 +34,25 @@ namespace KVParser
         {
             dict = new ConcurrentDictionary<string, List<string>>();
             dir = directory;
+        }
+
+        /// <summary>
+        /// Displays to console the contents of the dictionaries(all key value pairs)
+        /// </summary>
+        public void DisplayDictionary()
+        {
+
+            foreach (KeyValuePair<string, List<string>> kv in dict)
+            {
+                Console.Write("Key:{0}     Values:", kv.Key);
+                foreach (string s in kv.Value)
+                {
+
+                    Console.Write("  {0} ", s);
+                }
+                Console.Write("\n");
+            }
+
         }
 
 
@@ -78,6 +98,7 @@ namespace KVParser
         }
 
 
+
         /// <summary>
         /// Writes Random key value pairs to a file. Directory is where all files will be written
         /// filecount is the amount of files to create
@@ -88,7 +109,35 @@ namespace KVParser
         /// <param name="examplecount"></param>
         public static void Writer(string dir, int filecount, int examplecount)
         {
+            const string characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+            Random randomize = new Random();
+            var newstring = new char[12];
 
+            Directory.SetCurrentDirectory(dir);
+
+            for (int i = 0; i < filecount; i++)
+            {
+                string file = "kvfile" + i + ".kv";
+
+
+                using (StreamWriter sw = new StreamWriter(file))
+                {
+                    for (int j = 0; j < examplecount; j++)
+                    {
+
+                        for (int k = 0; k < newstring.Length; k++)
+                        {
+                            newstring[k] = characters[randomize.Next(characters.Length)];
+                        }
+
+                        string result = new string(newstring);
+
+                        int value = randomize.Next();
+
+                        sw.WriteLine(result + "=" + value);
+                    }
+                }
+            }
         }
 
 
