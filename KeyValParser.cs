@@ -27,7 +27,10 @@ namespace KVParser
 
         /// <summary>
         /// Parameterized constructor to set up class with a directory. Uses passed directory to read files from. 
-        ///
+        /// 
+        /// NOTE: No error checking is done on path given, It assumes everything is valid
+        /// So user of function must assure that the path being passed in is valid(exists, uses fwd slashes instead of backslashes(windows), etc...)
+        /// 
         /// </summary>
         /// <param name="directory"></param>
         public KeyValParser(string directory)
@@ -82,6 +85,28 @@ namespace KVParser
 
 
         /// <summary>
+        /// Helper function to get amount of duplicate values in the dictionary(Made for testing)
+        /// </summary>
+        /// <returns></returns>
+        public int GetDuplicateCount()
+        {
+            int count = 0;
+            foreach(KeyValuePair<string, List<string>> kv in dict)
+            {
+                if(kv.Value.Count > 1)
+                {
+                    count += kv.Value.Count -1;
+                }
+            }
+
+
+            return count;
+
+        }
+
+
+
+        /// <summary>
         /// KeyValue(.kv) File Reader & Parser. Searches through everything in dir(directory and subdirectories) and takes all key value pairs in kv files
         /// and stores them in a dictionary. 
         /// </summary>
@@ -116,7 +141,7 @@ namespace KVParser
 
             int i = 0;
             int limit = step;
-            string line;
+            
 
 
         
@@ -129,7 +154,7 @@ namespace KVParser
                 //If using a slower hard drive performance may be worse than sequential due to simultaneous seeks. 
                 Parallel.For(i, limit, options, i =>
                 {
-
+                    string line;
                     using (StreamReader sr = new StreamReader(allfiles[i]))
                     {
 
@@ -140,29 +165,37 @@ namespace KVParser
                         while (line != null)
                         {
 
+                            if(line == null)
+                            {
+                                break;
+                            }
                             //Split on '=', then check if the key is in the dictionary. 
                             string[] splitline = line.Split('=');
 
-                            if (!dict.ContainsKey(splitline[0]))
+                            if (splitline != null)
                             {
-                                List<string> temp = new List<string>();
-                                dict.TryAdd(splitline[0], temp);
 
-                                //Lock the list corresponding to this key, as it is not thread safe.
-                                lock (dict[splitline[0]])
+                                if (!dict.ContainsKey(splitline[0]))
                                 {
-                                    dict[splitline[0]].Add(splitline[1]);
-                                }
+                                    List<string> temp = new List<string>();
+                                    dict.TryAdd(splitline[0], temp);
 
-                            }
-                            else
-                            {
-                                //Lock the list corresponding to this key, as it is not thread safe.
-                                lock (dict[splitline[0]])
+                                    //Lock the list corresponding to this key, as it is not thread safe.
+                                    lock (dict[splitline[0]])
+                                    {
+                                        dict[splitline[0]].Add(splitline[1]);
+                                    }
+
+                                }
+                                else
                                 {
-                                    dict[splitline[0]].Add(splitline[1]);
-                                }
+                                    //Lock the list corresponding to this key, as it is not thread safe.
+                                    lock (dict[splitline[0]])
+                                    {
+                                        dict[splitline[0]].Add(splitline[1]);
+                                    }
 
+                                }
                             }
                             //Read Next Line.
                             line = sr.ReadLine();
